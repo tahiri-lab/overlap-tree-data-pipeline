@@ -44,7 +44,7 @@ The unified script runs the appropriate workflow depending on the selected mode 
 
 Mode 1 constructs a base set of species, generates exactly 10 overlapping taxon subsets, submits these subsets to the VertLife PhyloSubsets service, downloads the resulting pruned Nexus files, samples trees from each subset, and combines the sampled trees into one Newick dataset file. The script enforces equal tree sampling across the 10 subsets, which is why the requested total number of trees must be divisible by 10.
 
-### Mode 2: reference-tree benchmark datasets
+### Mode 2: Reference-tree benchmark datasets
 
 Mode 2 starts from one or more local full-tree Newick strings, creates reference trees by pruning to selected base taxa lists, generates overlapping input-tree multisets under user-defined overlap constraints, optionally applies topology and branch-length perturbations, and writes dataset metadata and audit logs alongside the generated trees. If explicit base lists are not supplied, they are generated from the first full tree using a phylogeny-stratified procedure.
 
