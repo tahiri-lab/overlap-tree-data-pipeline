@@ -9,7 +9,7 @@ This folder contains datasets of phylogenetic trees defined on different but ove
 * The number of species included in each group varies (overall). In particular, there are 7239 species of amphibians, 9993 species of birds, 5911 species of mammals, and 1192 species of sharks (see [all_species_lists.csv](https://github.com/tahiri-lab/overlap-tree-data-pipeline/blob/main/all_species_lists.csv).
 * The final dataset for each group is comprised of 10 subsets that overlap by species, with the degree of overlap ranging from 10% to 90% (see the following Figure).
 
-![Levels of overlap among subsets for 4 groups of species](https://github.com/tahiri-lab/KNCL/blob/main/data/images/overlaps_subsets.png "Levels of overlap among subsets for 4 groups of species")
+![Levels of overlap among subsets for 4 groups of species](https://github.com/tahiri-lab/overlap-tree-data-pipeline/blob/main/datasets/datasets-mode1/overlaps_subsets.png "Levels of overlap among subsets for 4 groups of species")
 
 The biological data consists of the following four files:
 
@@ -43,7 +43,7 @@ The biological data consists of the following four files:
 
 The distributions of overlap levels of biological data for all possible pairs of trees (without repeats) are presented below.
 
-![The distributions for the levels of overlap in the biological data](https://github.com/tahiri-lab/KNCL/blob/main/data/images/overlap_levels_comparison.png "The distributions for the levels of overlap in the biological data")
+![The distributions for the levels of overlap in the biological data](https://github.com/tahiri-lab/overlap-tree-data-pipeline/blob/main/datasets/datasets-mode1/overlap_levels_comparison.png "The distributions for the levels of overlap in the biological data")
 
 ### References
 
