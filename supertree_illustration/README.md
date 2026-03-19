@@ -22,6 +22,7 @@ Content:
   - `supertrees_mrplus.txt` — Majority-Rule
   - `supertrees_scs.txt` — Spectral Clustering
  
- - **`supertree_validation.ipynb`**
-   
-   Contains validation results.
+### Validation files
+- `supertree_validation.py`: script used to validate the supertree illustration results.
+- `supertree_validation_results_detailed.csv`: detailed per-dataset validation results for all methods.
+- `supertree_validation_results_summary.csv`: summary of validation metrics.
