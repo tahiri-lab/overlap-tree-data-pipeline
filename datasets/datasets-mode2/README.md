@@ -4,7 +4,7 @@ This folder contains the datasets constructed by the proposed data pipeline in M
 
 Constructed datasets include four species groups: **Amphibians, Mammals, Sharks, and Squamates**. The source phylogenetic data were obtained from **VertLife**.
 
-In addition to the prepared datasets, this folder also contains the script used to validate the datasets.
+In addition to the prepared datasets, this folder also contains the script used to validate the datasets and the validation results.
 
 ## Source
 
