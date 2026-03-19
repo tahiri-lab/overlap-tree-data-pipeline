@@ -6,7 +6,7 @@ This folder contains datasets of phylogenetic trees defined on different but ove
 
 * The biological data utilized in this study was obtained from [vertlife.org](https://vertlife.org/phylosubsets/) [[1]](#ref1), which offers a straightforward method for acquiring tree distributions with specified subsets of taxa. The tool initially prunes a comprehensive dataset to a smaller subset and then samples trees from the selected pseudoposterior distribution.
 * The following four groups are provided: :frog: **amphibians** [[2]](#ref2), :eagle: **birds** [[3]](#ref3), :monkey: **mammals** [[1]](#ref1), and :shark: **sharks** [[4]](#ref4).
-* The number of species included in each group varies (overall). In particular, there are 7239 species of amphibians, 9993 species of birds, 5911 species of mammals, and 1192 species of sharks (see [all_species_lists.csv](https://github.com/tahiri-lab/overlap-tree-data-pipeline/blob/main/all_species_lists.csv).
+* The number of species included in each group varies (overall). In particular, there are 7239 species of amphibians, 9993 species of birds, 5911 species of mammals, and 1192 species of sharks (see [all_species_lists.csv](https://github.com/tahiri-lab/overlap-tree-data-pipeline/blob/main/all_species_lists.csv)).
 * The final dataset for each group is comprised of 10 subsets that overlap by species, with the degree of overlap ranging from 10% to 90% (see the following Figure).
 
 ![Levels of overlap among subsets for 4 groups of species](https://github.com/tahiri-lab/overlap-tree-data-pipeline/blob/main/datasets/datasets-mode1/overlaps_subsets.png "Levels of overlap among subsets for 4 groups of species")
