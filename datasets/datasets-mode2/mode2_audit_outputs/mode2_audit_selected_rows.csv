@@ -1,0 +1,21 @@
+species_group,dataset_label,size_min_max,overlap_min_max,min_shared_taxa,anchors
+amphibians,Dataset 1,25--36,0.342--0.697,13,10
+amphibians,Dataset 5,35--52,0.323--0.681,19,10
+amphibians,Dataset 10,47--70,0.325--0.696,25,10
+amphibians,Dataset 15,61--90,0.319--0.688,30,10
+amphibians,Dataset 20,72--108,0.348--0.660,39,10
+mammals,Dataset 1,25--36,0.311--0.697,14,10
+mammals,Dataset 5,35--52,0.300--0.696,18,10
+mammals,Dataset 10,47--70,0.304--0.675,24,10
+mammals,Dataset 15,61--90,0.320--0.697,32,10
+mammals,Dataset 20,72--108,0.324--0.695,36,10
+sharks,Dataset 1,25--36,0.326--0.692,14,10
+sharks,Dataset 5,35--52,0.333--0.694,20,10
+sharks,Dataset 10,47--70,0.311--0.690,23,10
+sharks,Dataset 15,61--90,0.337--0.699,33,10
+sharks,Dataset 20,72--108,0.319--0.689,37,10
+squamates,Dataset 1,25--36,0.325--0.692,13,10
+squamates,Dataset 5,35--52,0.333--0.681,20,10
+squamates,Dataset 10,47--70,0.316--0.691,24,10
+squamates,Dataset 15,61--90,0.312--0.700,29,10
+squamates,Dataset 20,72--108,0.310--0.641,35,10

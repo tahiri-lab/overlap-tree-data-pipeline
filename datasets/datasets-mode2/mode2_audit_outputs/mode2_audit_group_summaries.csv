@@ -1,0 +1,5 @@
+species_group,datasets_checked,total_input_trees,total_pairs,overlap_violating_pairs_total,min_shared_violating_pairs_total,overlap_min_across_group,overlap_max_across_group,min_shared_taxa_across_group,anchors_shared_by_all_trees_min,anchors_shared_by_all_trees_max,full_coverage_failures,subset_failures,duplicate_label_failures,non_positive_branch_length_failures
+amphibians,20,600,8700,0,0,0.302326,0.700000,13,10,10,0,0,0,0
+mammals,20,600,8700,0,0,0.300000,0.700000,14,10,10,0,0,0,0
+sharks,20,600,8700,0,0,0.300000,0.700000,14,10,10,0,0,0,0
+squamates,20,600,8700,0,0,0.300000,0.700000,13,10,10,0,0,0,0
