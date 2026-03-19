@@ -11,7 +11,7 @@ Content:
 
 - **`input_datasets/`**
 
-  Contains 100 input sets of phylogenetic trees used for the supertree reconstruction demonstration. Each file (`multiset_X.txt`) consists of 30 trees with overlapping taxa, generated using the proposed pipeline (mode 1).
+  Contains 100 input sets of phylogenetic trees used for the supertree reconstruction demonstration. Each file (`multiset_X.txt`) consists of 30 trees with overlapping taxa, constructed using the proposed pipeline (mode 1).
 
 - **`supertrees/`**
 
