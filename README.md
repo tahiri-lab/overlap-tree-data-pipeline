@@ -28,10 +28,10 @@ The repository contains:
 - **`all_species_lists.csv`**  
   Species list file used by the pipeline
 
-- **`datasets-mode1/`**  
+- **`datasets/datasets-mode1/`**  
   Datasets constructed using mode 1
 
-- **`datasets-mode2/`**  
+- **`datasets/datasets-mode2/`**  
   Datasets constructed using mode 2
 
 The unified script runs the appropriate workflow depending on the selected mode and passes parameters through to the underlying implementation.
