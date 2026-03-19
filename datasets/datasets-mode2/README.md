@@ -62,6 +62,8 @@ Across all four groups, the release therefore contains:
 - 80 reference trees
 - 2400 input trees
 
+Exact species for all four Mode 2 reference-tree groups are provided in [`reference_trees/reference_tree_species.xlsx`](reference_trees/reference_tree_species.xlsx).
+
 ## Validation
 
 In addition to the prepared datasets, this folder also contains the script used to validate the datasets and the validation results. The audit verifies:
