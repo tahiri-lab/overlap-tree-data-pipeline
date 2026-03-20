@@ -1,0 +1,6 @@
+Method,Success rate,Average number of taxa in output trees,All expected taxa covered,Analysis-ready
+Split Fit,100%,55.0,Yes,Yes
+Most Similar,100%,55.0,Yes,Yes
+Average NJ,100%,55.0,Yes,Yes
+Majority-Rule,100%,55.0,Yes,Yes
+Spectral Clustering,100%,55.0,Yes,Yes
