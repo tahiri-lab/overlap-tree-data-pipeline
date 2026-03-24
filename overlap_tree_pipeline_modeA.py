@@ -264,14 +264,18 @@ GROUP_MAPPING = {
     "squamates": "squamatetree"
 }
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+import os
+
 def setup_driver() -> webdriver.Chrome:
     chrome_options = Options()
-
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920x1080")
 
-    # Linux-specific flags; harmless to skip elsewhere.
+    # Linux flags
     if os.name != "nt":
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-gpu")
@@ -279,30 +283,18 @@ def setup_driver() -> webdriver.Chrome:
         chrome_options.add_argument("--remote-debugging-port=9222")
 
     # Optional explicit browser path
-    chrome_bin = (
-        os.environ.get("CHROME_BIN")
-        or shutil.which("google-chrome")
-        or shutil.which("chrome")
-        or shutil.which("chromium")
-        or shutil.which("chromium-browser")
-    )
-    if chrome_bin:
+    chrome_bin = os.environ.get("CHROME_BIN")
+    if chrome_bin and os.path.exists(chrome_bin):
         chrome_options.binary_location = chrome_bin
 
     # Optional explicit driver path
-    chromedriver_bin = (
-        os.environ.get("CHROMEDRIVER")
-        or shutil.which("chromedriver")
-        or shutil.which("chromedriver.exe")
-    )
+    chromedriver_bin = os.environ.get("CHROMEDRIVER")
+    if chromedriver_bin and os.path.exists(chromedriver_bin):
+        service = Service(executable_path=chromedriver_bin)
+        return webdriver.Chrome(service=service, options=chrome_options)
 
-    # Best default: let Selenium Manager resolve things automatically
-    if not chromedriver_bin:
-        return webdriver.Chrome(options=chrome_options)
-
-    # Explicit driver path when one is available
-    service = Service(executable_path=chromedriver_bin)
-    return webdriver.Chrome(service=service, options=chrome_options)
+    # Best default: let Selenium Manager resolve/download what it needs
+    return webdriver.Chrome(options=chrome_options)
 
 def clean_folder(folder_name: str) -> None:
     if os.path.exists(folder_name):
