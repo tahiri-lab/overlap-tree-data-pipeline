@@ -248,7 +248,8 @@ def create_overlapping_subsets(
             subsets[key] += [None] * (max_len - len(subsets[key]))
 
         output_df = pd.DataFrame(subsets)
-        output_file = f"{group}_overlapping_subsets.csv"
+        group_slug = str(group).strip().lower()
+        output_file = f"{group_slug}_overlapping_subsets.csv"
         output_df.to_csv(output_file, index=False)
         print(f"Saved file for {group}: {output_file}")
 
@@ -369,7 +370,7 @@ def download_zipfile_using_job_id(job_id: str, folder_name: str, max_retries: in
 
 
 def automate_process(input_file: str, email: str) -> None:
-    group_name = os.path.basename(input_file).split("_")[0]
+    group_name = os.path.basename(input_file).split("_")[0].strip().lower()
     print(f"Group Name: {group_name}")
 
     folder_name = f"{group_name}_nexus"
@@ -507,7 +508,7 @@ def main() -> None:
         print(f"Error during species selection: {e}")
         sys.exit(1)
 
-    result_df = pd.DataFrame({species_group.capitalize(): final_species})
+    result_df = pd.DataFrame({species_group: final_species})
     result_df.to_csv("selected_species.csv", index=False)
 
     p_values = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
