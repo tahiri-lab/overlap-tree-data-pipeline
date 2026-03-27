@@ -6,33 +6,20 @@ This project provides a reproducible pipeline for constructing phylogenetic tree
 
 It supports two complementary dataset-construction modes:
 
-- **Mode 1 (`service`)** builds overlapping taxon subsets and retrieves pruned phylogenetic tree samples from the VertLife PhyloSubsets web service.
+- **Mode 1 (`service`)** builds overlapping taxon subsets and retrieves pruned phylogenetic tree samples from the VertLife web service.
 - **Mode 2 (`reference`)** builds benchmark datasets from one or more locally available broad-coverage phylogenetic trees by pruning them to create reference trees and then pruning again to create overlapping input trees, with optional controlled topology and branch-length perturbation.
 
 The repository is intended for constructing empirical overlap-controlled datasets for tasks such as supertree construction, tree comparison, clustering, and related benchmarking workflows.
 
 The repository contains:
 
-- **`overlap_tree_pipeline.py`**  
-  Unified script for both modes
-
-- **`overlap_tree_pipeline_modeA.py`**  
-  Mode 1 implementation for generating 10 overlapping subsets and retrieving VertLife tree samples
-
-- **`gen_pruned_trees.py`**  
-  Core Mode 2 tree-pruning and benchmark-generation logic
-
-- **`make_base_species_lists_phylo_stratified.py`**  
-  Helper for generating phylogeny-stratified base taxa lists for Mode 2
-
-- **`all_species_lists.csv`**  
-  Species list file used by the pipeline
-
-- **`datasets/datasets-mode1/`**  
-  Datasets constructed using mode 1
-
-- **`datasets/datasets-mode2/`**  
-  Datasets constructed using mode 2
+- **`overlap_tree_pipeline.py`** Unified script for both modes
+- **`overlap_tree_pipeline_modeA.py`** Mode 1 implementation for generating 10 overlapping subsets and retrieving VertLife tree samples
+- **`gen_pruned_trees.py`** Core Mode 2 tree-pruning and benchmark-generation logic
+- **`make_base_species_lists_phylo_stratified.py`** Helper for generating phylogeny-stratified base taxa lists for Mode 2
+- **`all_species_lists.csv`** Species list file used by the pipeline
+- **`datasets/datasets-mode1/`** Datasets constructed using Mode 1
+- **`datasets/datasets-mode2/`** Datasets constructed using Mode 2
 
 The unified script runs the appropriate workflow depending on the selected mode and passes parameters through to the underlying implementation.
 
@@ -42,11 +29,21 @@ The unified script runs the appropriate workflow depending on the selected mode 
 
 ### Mode 1: Overlap tree datasets
 
-Mode 1 constructs a base set of species, generates exactly 10 overlapping taxon subsets, submits these subsets to the VertLife PhyloSubsets service, downloads the resulting pruned Nexus files, samples trees from each subset, and combines the sampled trees into one Newick dataset file. The script enforces equal tree sampling across the 10 subsets, which is why the requested total number of trees must be divisible by 10.
+Mode 1 constructs a base set of species, generates exactly 10 overlapping taxon subsets, and then proceeds in one of two ways:
+
+1. **Fully automated path**  
+   The pipeline submits these subsets to the VertLife PhyloSubsets service, downloads the resulting pruned Nexus files, samples trees from each subset, and combines the sampled trees into one Newick dataset file.
+
+2. **Manual path**  
+   The pipeline can stop after generating the selected species list and overlap subsets, allowing the user to submit the subsets manually through the VertLife website and later resume from a local Nexus folder.
+
+The script enforces equal tree sampling across the 10 subsets, which is why the requested total number of trees must be divisible by 10.
 
 ### Mode 2: Reference-tree benchmark datasets
 
-Mode 2 starts from one or more local full-tree Newick strings, creates reference trees by pruning to selected base taxa lists, generates overlapping input-tree multisets under user-defined overlap constraints, optionally applies topology and branch-length perturbations, and writes dataset metadata and audit logs alongside the generated trees. If explicit base lists are not supplied, they are generated from the first full tree using a phylogeny-stratified procedure.
+Mode 2 starts from one or more local full-tree Newick strings, creates reference trees by pruning to selected base taxa lists, generates overlapping input-tree multisets under user-defined overlap constraints, optionally applies topology and branch-length perturbations, and writes dataset metadata and audit logs alongside the generated trees.
+
+If explicit base lists are not supplied, they are generated from the first full tree using a phylogeny-stratified procedure.
 
 ---
 
@@ -54,23 +51,32 @@ Mode 2 starts from one or more local full-tree Newick strings, creates reference
 
 ### Python
 
-Python 3.9+ is recommended. 
+Python 3.9+ is recommended.
 
 ### Required packages
 
 Install the main dependencies with:
 
 ```bash
-pip install pandas requests biopython selenium ete3 openpyxl
-```
+pip install pandas requests biopython selenium ete3 openpyxl pyyaml
+````
 
 ### Browser requirements for Mode 1
 
-Mode 1 uses Selenium to submit jobs through the VertLife web form. It requires:
+Mode 1 uses Selenium to submit jobs through the VertLife web form.
+
+It requires:
 
 * Chrome or Chromium
-* ChromeDriver available on `PATH`
-* A ChromeDriver version matching the installed browser major version 
+* ChromeDriver available on `PATH`, or explicitly specified with environment variables
+* A ChromeDriver version matching the installed browser major version
+
+If Chrome is installed but not on the default path, explicit environment variables may be used:
+
+```bash
+export CHROME_BIN=/path/to/chrome-or-chromium
+export CHROMEDRIVER=/path/to/chromedriver
+```
 
 ---
 
@@ -88,7 +94,9 @@ The pipeline expects `all_species_lists.csv` in wide format, with one column per
 
 Each column contains one species name per row.
 
-Mode 1 expects this file in the current working directory. Mode 2 uses the same file by default, but the path can be overridden with `--all_species_csv`.
+Mode 1 expects this file in the current working directory.
+
+Mode 2 uses the same file by default, but the path can be overridden with `--all_species_csv`.
 
 ### Full-tree file for Mode 2
 
@@ -104,7 +112,9 @@ Example:
 
 ### Taxon naming convention
 
-Mode 2 normalizes taxa names by converting spaces to underscores when reading species lists. For best results, the leaf labels in the full-tree file should use underscore-separated names as well. If the full trees use spaces, either convert the leaf labels before running the pipeline or adjust the normalization logic in the script.
+Mode 2 normalizes taxa names by converting spaces to underscores when reading species lists. For best results, the leaf labels in the full-tree file should use underscore-separated names as well.
+
+If the full trees use spaces, either convert the leaf labels before running the pipeline or adjust the normalization logic in the script.
 
 ---
 
@@ -135,49 +145,88 @@ python overlap_tree_pipeline.py reference --help
 
 ### Purpose
 
-This mode constructs 10 overlapping taxon subsets and retrieves pruned tree samples for each subset from VertLife. It is suitable for building empirical overlap-controlled datasets with branch lengths preserved in the downloaded trees.
+This mode constructs 10 overlapping taxon subsets and retrieves pruned tree samples for each subset from VertLife.
 
-### Example
+It is suitable for building empirical overlap-controlled datasets with branch lengths preserved in the downloaded trees.
+
+### Fully automated example
 
 ```bash
 python overlap_tree_pipeline.py service amphibians 120 550 name@example.com --seed 7
 ```
 
+### Preparation-only example
+
+```bash
+python overlap_tree_pipeline.py service mammals 12 10 name@example.com \
+  --selection_mode user_list \
+  --species_list_file mammals.txt \
+  --seed 7 \
+  --prepare_only
+```
+
+### Resume-from-existing-Nexus example
+
+```bash
+python overlap_tree_pipeline.py service mammals 12 10 name@example.com \
+  --selection_mode user_list \
+  --species_list_file mammals.txt \
+  --seed 7 \
+  --use_existing_nexus mammals_nexus
+```
+
 ### Main positional arguments
 
 * `species_group`
+  
   One of `amphibians`, `birds`, `mammals`, `sharks`, `squamates`
 
 * `n`
+  
   Size of the base species set; ignored when `--selection_mode user_list`
 
 * `number_of_trees`
+  
   Total number of output trees in the final combined dataset
 
 * `email`
-  Email address required by VertLife
+  
+  Email address required by VertLife for the fully automated path. It is still accepted for the preparation-only and resume workflows for CLI consistency.
 
 ### Main optional arguments
 
 * `--selection_mode {user_list,random,stratified}`
+
   Default: `stratified`
 
 * `--species_list_file PATH`
+
   Used with `user_list`
 
 * `--stratify_by genus`
+
   Currently only genus is supported
 
 * `--max_per_stratum INT`
+
   Optional per-genus cap in stratified sampling
 
 * `--seed INT`
+
   Random seed for reproducible species selection and tree sampling
+
+* `--prepare_only`
+
+  Generate `selected_species.csv` and `<group>_overlapping_subsets.csv`, then stop before VertLife submission
+
+* `--use_existing_nexus DIR`
+
+  Skip VertLife submission and use an existing folder of downloaded Nexus files to finish the dataset
 
 ### Constraints
 
 * `number_of_trees` must be divisible by 10
-* `number_of_trees` must be between 10 and 1000 inclusive 
+* `number_of_trees` must be between 10 and 1000 inclusive
 
 ### Mode 1 outputs
 
@@ -187,6 +236,57 @@ Mode 1 writes to the current working directory:
 * `<group>_overlapping_subsets.csv`
 * `<group>_nexus/`
 * `overlapping_dataset_<group>.txt`
+
+Behavior by workflow:
+
+* In the **fully automated path**, all four outputs are produced.
+* In **`--prepare_only`** mode, only `selected_species.csv` and `<group>_overlapping_subsets.csv` are produced.
+* In **`--use_existing_nexus DIR`** mode, the Nexus directory must already exist and contain exactly 10 `.nex` files.
+
+### Manual fallback when VertLife is slow
+
+If automated Selenium requests repeatedly fail or the VertLife website is slow, Mode 1 can be run in two stages.
+
+#### Step 1. Generate the selected species list and the overlapping subset file only
+
+```bash
+python overlap_tree_pipeline.py service mammals 12 10 you@example.com \
+  --selection_mode user_list \
+  --species_list_file mammals.txt \
+  --seed 7 \
+  --prepare_only
+```
+
+This writes:
+
+* `selected_species.csv`
+* `mammals_overlapping_subsets.csv`
+
+#### Step 2. Submit each subset manually on the VertLife PhyloSubsets website
+
+Open `mammals_overlapping_subsets.csv`, submit each subset column through the VertLife website, and download the resulting Nexus files.
+
+Place the downloaded `.nex` files into a folder such as:
+
+```text
+mammals_nexus/
+```
+
+The folder should contain exactly 10 Nexus files, one for each subset.
+
+#### Step 3. Resume the pipeline locally from the downloaded Nexus files
+
+```bash
+python overlap_tree_pipeline.py service mammals 12 10 you@example.com \
+  --selection_mode user_list \
+  --species_list_file mammals.txt \
+  --seed 7 \
+  --use_existing_nexus mammals_nexus
+```
+
+This final step converts the Nexus files to Newick, samples trees equally across the 10 subsets, and writes:
+
+* `overlapping_dataset_mammals.txt`
 
 ---
 
@@ -222,17 +322,21 @@ python overlap_tree_pipeline.py reference \
 ### Core inputs
 
 * `--group`
+
   One of `amphibians`, `birds`, `mammals`, `sharks`, `squamates`
 
 * `--full_trees PATH`
+
   File containing one or more semicolon-separated Newick trees
 
 * `--outdir PATH`
-  Output root directory
+
+  Output root directory.
   Default: `./benchmark_datasets`
 
 * `--all_species_csv PATH`
-  Species-list CSV
+
+  Species-list CSV.
   Default: `all_species_lists.csv`
 
 ### Base taxa list configuration
@@ -240,10 +344,12 @@ python overlap_tree_pipeline.py reference \
 Generated base taxa lists can be configured with:
 
 * `--base_sizes SPEC`
-  Format `start:end:step` or comma-separated list
+
+  Format `start:end:step` or comma-separated list.
   Default: `50:145:5`
 
 * `--seed INT`
+
   Default: `7`
 
 Instead of generating them, explicit base lists may be supplied with:
@@ -259,12 +365,15 @@ If explicit base lists are not supplied, the pipeline generates them from the fi
 When base lists are generated automatically, the following controls are available:
 
 * `--k_strata INT`
+
   Default: `12`
 
 * `--reuse_fraction FLOAT`
+
   Default: `0.15`
 
 * `--max_per_species INT`
+
   Default: `6`
 
 ### Overlap-set generation
@@ -272,67 +381,83 @@ When base lists are generated automatically, the following controls are availabl
 The overlapping input-tree sets are controlled through:
 
 * `--n_input_trees INT`
-  Number of input trees per dataset
+
+  Number of input trees per dataset. 
   Default: `30`
 
 * `--pairwise_overlap_range LO HI`
-  Jaccard overlap bounds
+
+  Jaccard overlap bounds. 
   Default: `0.30 0.70`
 
 * `--min_shared INT`
-  Minimum shared taxa per tree pair
+
+  Minimum shared taxa per tree pair. 
   Default: `2`
 
 * `--enforce_full_coverage` / `--no_full_coverage`
+
   Full coverage is enabled by default
 
 * `--anchor_taxa_count INT`
-  Number of anchor taxa included in every input tree
-  Default: `10` 
+
+  Number of anchor taxa included in every input tree. 
+  Default: `10`
 
 ### Pruning behavior
 
 Tree pruning can be configured with:
 
 * `--prune_mode {leaves,clades,mixed}`
+
   Default: `mixed`
 
 * `--clade_selection_bias FLOAT`
+
   Default: `0.6`
 
 * `--leaf_prune_blockiness FLOAT`
+
   Default: `0.3`
 
 * `--no_contract_degree2`
+
   Disables contraction of degree-2 nodes after pruning
 
 ### Input-tree size range
 
 * `--target_size_frac LO HI`
-  Fraction of reference-tree taxa retained per input tree
-  Default: `0.50 0.75` 
+
+  Fraction of reference-tree taxa retained per input tree. 
+  Default: `0.50 0.75`
 
 ### Noise controls
 
 Topology and branch-length perturbation can be configured with:
 
 * `--topology_noise {none,swap_labels,nni}`
+
   Default: `nni`
 
 * `--nni_moves INT`
+
   Default: `3`
 
 * `--no_protect_anchors`
+
   Allows anchor taxa to move during topology perturbation
 
 * `--length_scaling {none,global,global_uniform}`
+
   Default: `global_uniform`
 
 * `--length_scale_range LO HI`
+
   Default: `1.003 1.009`
 
 * `--renormalize_root_height {none,to_base}`
-  Default: `none` 
+
+  Default: `none`
 
 ### Mode 2 outputs
 
@@ -365,21 +490,26 @@ datasets-mode2/
 Main output files:
 
 * `reference_XX.nwk`
+
   Reference tree for dataset `XX`
 
-* `<group>_reference_trees<N>.txt`
+* `<group>_reference_trees.txt`
+
   All successfully created reference trees, one per line
 
 * `multiset_X.txt`
+
   Overlapping input trees for dataset `X`, one Newick tree per line
 
 * `dataset_XX.json`
+
   Dataset metadata including parameters, seeds, taxa counts, and file paths
 
 * `audit_XX.json`
+
   Audit statistics including overlap extrema, shared-taxa extrema, total pair counts, and anchor-coverage summaries
 
-If a full tree and a base taxa list intersect in fewer than 2 taxa, that dataset is skipped. 
+If a full tree and a base taxa list intersect in fewer than 2 taxa, that dataset is skipped.
 
 ---
 
@@ -394,6 +524,7 @@ The most important configuration settings in this project are:
 * total number of sampled trees
 * species selection mode
 * seed
+* whether the run is fully automated, preparation-only, or resumed from an existing Nexus folder
 
 ### For Mode 2
 
@@ -422,11 +553,10 @@ The pipeline is designed for reproducible dataset generation.
 * In Mode 2, `--seed` controls generated base taxa lists and overlap-set generation.
 * In Mode 2, each dataset additionally receives a deterministic dataset-specific seed derived from the main seed and dataset index.
 
-For reproducible use, record:
+For Mode 1 manual runs, it is also helpful to retain:
 
-* the full command line
-* the main seed
-* the generated metadata file for the dataset, such as `metadata/dataset_XX.json`
+* the generated `<group>_overlapping_subsets.csv`
+* the downloaded Nexus files used to assemble the final dataset
 
 ---
 
@@ -446,7 +576,7 @@ The audit records include:
 * minimum and maximum pairwise intersection size
 * number of pairs outside the requested overlap bounds
 * number of pairs below the minimum shared-taxa threshold
-* anchor coverage counts when anchors are explicit 
+* anchor coverage counts when anchors are explicit
 
 These outputs support automated checking of the generated benchmark datasets.
 
@@ -459,20 +589,32 @@ These outputs support automated checking of the generated benchmark datasets.
 **ChromeDriver errors**
 
 * Confirm Chrome or Chromium is installed
-* Confirm ChromeDriver is installed and on `PATH`
-* Confirm the ChromeDriver major version matches the installed browser major version 
+* Confirm ChromeDriver is installed and on `PATH`, or supplied through `CHROMEDRIVER`
+* Confirm the ChromeDriver major version matches the installed browser major version
+* If Chrome is installed in a non-default location, set `CHROME_BIN`
 
 **VertLife delays or download failures**
 
 Mode 1 depends on an external web service. Temporary failures may occur because of service load or network issues.
 
+Occasional retries during automated submission are expected. If automated requests repeatedly fail, use the manual fallback workflow described above:
+
+1. run with `--prepare_only`
+2. submit the 10 subsets manually on VertLife
+3. place the downloaded `.nex` files into `<group>_nexus/`
+4. rerun with `--use_existing_nexus <group>_nexus`
+
 **Errors with `number_of_trees`**
 
-Mode 1 requires `number_of_trees` to be divisible by 10 and to lie between 10 and 1000 inclusive. 
+Mode 1 requires `number_of_trees` to be divisible by 10 and to lie between 10 and 1000 inclusive.
 
 **Missing `all_species_lists.csv`**
 
 Mode 1 expects this file in the current working directory.
+
+**Invalid Nexus folder in `--use_existing_nexus` mode**
+
+The supplied directory must exist and contain exactly 10 `.nex` files, one for each overlap subset.
 
 ### Mode 2
 
@@ -496,7 +638,9 @@ If the overlap between a base taxa list and the full tree is too small, the corr
 
 ## Citation
 
-If VertLife data are used, cite the relevant [VertLife paper(s)](https://vertlife.org/data/) and the corresponding group-level phylogeny sources. The Mode 1 script also prints the relevant data-source citations after a run.
+If VertLife data are used, cite the relevant [VertLife paper(s)](https://vertlife.org/data/) and the corresponding group-level phylogeny sources.
+
+The Mode 1 script also prints the relevant data-source citations after a run.
 
 ---
 
