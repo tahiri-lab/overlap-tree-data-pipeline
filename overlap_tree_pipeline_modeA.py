@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
 Description:
-    This script automates the creation of biologically meaningful partially overlapping phylogenetic trees
-    with branch lengths using VertLife phylosubsets. Species selection supports three modes:
-    user-provided list, uniform random sampling, and stratified random sampling by genus.
+    This script automates the creation of biologically meaningful partially
+    overlapping phylogenetic trees with branch lengths using VertLife
+    phylosubsets. Species selection supports three modes: user-provided list,
+    uniform random sampling, and stratified random sampling by genus.
 """
 
 import argparse
@@ -21,7 +22,6 @@ import pandas as pd
 import requests
 from Bio import Phylo
 
-# For Selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -29,7 +29,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
-# Argument parsing
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -70,8 +69,18 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Random seed for reproducible selection and tree sampling."
     )
+    parser.add_argument(
+        "--prepare_only",
+        action="store_true",
+        help="Generate selected_species.csv and <group>_overlapping_subsets.csv, then stop before VertLife submission."
+    )
+    parser.add_argument(
+        "--use_existing_nexus",
+        type=str,
+        default=None,
+        help="Skip VertLife submission and use an existing folder of Nexus files to finish the dataset."
+    )
     return parser.parse_args()
-
 
 
 # Overlap subset sizing helpers
@@ -145,7 +154,7 @@ def stratified_random_sample(
     selected: List[str] = []
     picked_per: Dict[str, int] = defaultdict(int)
 
-    active = labels[:]  # labels that still have available species
+    active = labels[:]
     idx = 0
     while len(selected) < n and active:
         lbl = active[idx % len(active)]
@@ -156,7 +165,6 @@ def stratified_random_sample(
 
         if max_per_stratum is not None and picked_per[lbl] >= max_per_stratum:
             idx += 1
-            # Stop if every remaining stratum is blocked by max_per_stratum or empty
             blocked = True
             for x in active:
                 if strata[x] and (max_per_stratum is None or picked_per[x] < max_per_stratum):
@@ -188,7 +196,7 @@ def select_base_species(
     if selection_mode == "user_list":
         user_species = load_species_list_file(species_list_file)
         user_species = [s.strip() for s in user_species if isinstance(s, str) and s.strip()]
-        user_species = list(dict.fromkeys(user_species))  # remove duplicates, preserve order
+        user_species = list(dict.fromkeys(user_species))
 
         unknown = [s for s in user_species if s not in full_species_list]
         if unknown:
@@ -212,10 +220,7 @@ def select_base_species(
 
 # Overlapping subset construction
 
-def create_overlapping_subsets(
-    df: pd.DataFrame,
-    p_values: List[float]
-) -> None:
+def create_overlapping_subsets(df: pd.DataFrame, p_values: List[float]) -> None:
     for group in df.columns:
         species_list = df[group].dropna().tolist()
         n_local = len(species_list)
@@ -264,10 +269,6 @@ GROUP_MAPPING = {
     "squamates": "squamatetree"
 }
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-import os
 
 def setup_driver() -> webdriver.Chrome:
     chrome_options = Options()
@@ -275,26 +276,23 @@ def setup_driver() -> webdriver.Chrome:
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920x1080")
 
-    # Linux flags
     if os.name != "nt":
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--disable-setuid-sandbox")
         chrome_options.add_argument("--remote-debugging-port=9222")
 
-    # Optional explicit browser path
     chrome_bin = os.environ.get("CHROME_BIN")
     if chrome_bin and os.path.exists(chrome_bin):
         chrome_options.binary_location = chrome_bin
 
-    # Optional explicit driver path
     chromedriver_bin = os.environ.get("CHROMEDRIVER")
     if chromedriver_bin and os.path.exists(chromedriver_bin):
         service = Service(executable_path=chromedriver_bin)
         return webdriver.Chrome(service=service, options=chrome_options)
 
-    # Best default: let Selenium Manager resolve/download what it needs
     return webdriver.Chrome(options=chrome_options)
+
 
 def clean_folder(folder_name: str) -> None:
     if os.path.exists(folder_name):
@@ -404,13 +402,13 @@ def automate_process(input_file: str, email: str) -> None:
         success = False
         retries = 0
         while not success and retries < 15:
+            driver: Optional[webdriver.Chrome] = None
             try:
                 print(f"Requesting trees for {subset_name}")
                 subset_species = df[subset_name].dropna().tolist()
 
                 driver = setup_driver()
                 job_id = submit_tree_request(driver, subset_species, email, group_name)
-                driver.quit()
 
                 if job_id:
                     job_ids[subset_name] = job_id
@@ -424,6 +422,12 @@ def automate_process(input_file: str, email: str) -> None:
                 print(f"Exception during processing subset {subset_name}: {e}")
                 retries += 1
                 time.sleep(20)
+            finally:
+                if driver is not None:
+                    try:
+                        driver.quit()
+                    except Exception:
+                        pass
 
         time.sleep(10)
 
@@ -462,10 +466,27 @@ def convert_nexus_to_newick(nexus_file: str, t: int) -> List[str]:
     return selected_newick_trees
 
 
+def validate_existing_nexus_dir(input_dir: str, expected_nexus_files: int = 10) -> None:
+    if not os.path.isdir(input_dir):
+        raise FileNotFoundError(f"Nexus directory not found: {input_dir}")
+
+    nexus_files = [f for f in os.listdir(input_dir) if f.lower().endswith(".nex")]
+    nexus_files.sort()
+
+    if len(nexus_files) != expected_nexus_files:
+        raise ValueError(
+            f"Expected exactly {expected_nexus_files} .nex files in {input_dir}, "
+            f"but found {len(nexus_files)}."
+        )
+
+    print(f"Validated existing Nexus directory: {input_dir}")
+    print(f"Found {len(nexus_files)} Nexus files.")
+
+
 def process_nexus_files(input_dir: str, output_file: str, t: int) -> None:
     all_selected_trees: List[str] = []
 
-    for filename in os.listdir(input_dir):
+    for filename in sorted(os.listdir(input_dir)):
         if filename.endswith(".nex"):
             nexus_file = os.path.join(input_dir, filename)
             selected_trees = convert_nexus_to_newick(nexus_file, t)
@@ -484,6 +505,10 @@ def process_nexus_files(input_dir: str, output_file: str, t: int) -> None:
 def main() -> None:
     args = parse_args()
 
+    if args.prepare_only and args.use_existing_nexus:
+        print("Error: --prepare_only and --use_existing_nexus cannot be used together.")
+        sys.exit(1)
+
     if args.seed is not None:
         random.seed(args.seed)
 
@@ -496,7 +521,7 @@ def main() -> None:
         print("Error: The number of trees must be between 10 and 1000 and divisible by 10.")
         sys.exit(1)
 
-    t = number_of_trees // 10  # number of trees to select per subset
+    t = number_of_trees // 10
 
     if not os.path.exists("all_species_lists.csv"):
         print("Error: 'all_species_lists.csv' file not found. Please ensure the file is present in the current directory.")
@@ -537,10 +562,26 @@ def main() -> None:
     create_overlapping_subsets(df, p_values=p_values)
 
     input_file = f"{species_group}_overlapping_subsets.csv"
-    automate_process(input_file, email)
-
-    input_dir = f"./{species_group}_nexus/"
+    default_nexus_dir = f"./{species_group}_nexus/"
     output_file = f"overlapping_dataset_{species_group}.txt"
+
+    if args.prepare_only:
+        print("Preparation complete.")
+        print("Generated files:")
+        print(" - selected_species.csv")
+        print(f" - {input_file}")
+        print("Submit the 10 subsets manually through VertLife, then rerun with:")
+        print(f"  --use_existing_nexus {species_group}_nexus")
+        return
+
+    if args.use_existing_nexus:
+        input_dir = args.use_existing_nexus
+        validate_existing_nexus_dir(input_dir, expected_nexus_files=10)
+    else:
+        automate_process(input_file, email)
+        input_dir = default_nexus_dir
+        validate_existing_nexus_dir(input_dir, expected_nexus_files=10)
+
     process_nexus_files(input_dir, output_file, t)
 
     citations = {
