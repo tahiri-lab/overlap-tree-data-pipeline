@@ -13,12 +13,6 @@ Mode "reference"
     tree to multiple partially intersecting taxa subsets to create overlapping input trees.
     Optional topology and branch-length perturbations can be applied after pruning.
 
-This script orchestrates the pipeline end-to-end. It reuses the existing
-Mode A implementation (overlap_tree_pipeline_modeA.py) and the core Mode B generator
-(gen_pruned_trees.py). Base taxa list construction for Mode B can either be loaded from
-a workbook/CSV, or generated using a phylogeny-stratified sampler adapted from
-make_base_species_lists_phylo_stratified.py.
-
 Usage:
 
   # Mode "service" (download pruned tree sets from VertLife PhyloSubsets)
@@ -84,7 +78,6 @@ def _require_reference_modules():
     import gen_pruned_trees as gp
     import make_base_species_lists_phylo_stratified as strat
     return Tree, gp, strat
-
 
 
 # Helpers
@@ -232,15 +225,22 @@ def run_mode_service(args: argparse.Namespace) -> None:
         str(args.n),
         str(args.number_of_trees),
         args.email,
-        "--selection_mode", args.selection_mode,
-        "--stratify_by", args.stratify_by,
+        "--selection_mode",
+        args.selection_mode,
+        "--stratify_by",
+        args.stratify_by,
     ]
+
     if args.species_list_file:
         cmd += ["--species_list_file", args.species_list_file]
     if args.max_per_stratum is not None:
         cmd += ["--max_per_stratum", str(args.max_per_stratum)]
     if args.seed is not None:
         cmd += ["--seed", str(args.seed)]
+    if args.prepare_only:
+        cmd += ["--prepare_only"]
+    if args.use_existing_nexus:
+        cmd += ["--use_existing_nexus", args.use_existing_nexus]
 
     print("\n[MODE service] Running:", " ".join(cmd))
     subprocess.run(cmd, check=True)
@@ -682,6 +682,17 @@ def build_parser() -> argparse.ArgumentParser:
     apA.add_argument("--stratify_by", choices=["genus"], default="genus")
     apA.add_argument("--max_per_stratum", type=int, default=None)
     apA.add_argument("--seed", type=int, default=None)
+    apA.add_argument(
+        "--prepare_only",
+        action="store_true",
+        help="Generate selected_species.csv and <group>_overlapping_subsets.csv, then stop before VertLife submission."
+    )
+    apA.add_argument(
+        "--use_existing_nexus",
+        type=str,
+        default=None,
+        help="Skip VertLife submission and use an existing folder of Nexus files to finish the dataset."
+    )
 
     # Reference
     apB = sub.add_parser(
@@ -792,7 +803,6 @@ def main() -> None:
         return
 
     raise ValueError(f"Unknown mode: {args.mode}")
-
 
 if __name__ == "__main__":
     main()
