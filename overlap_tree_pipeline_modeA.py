@@ -248,11 +248,7 @@ def create_overlapping_subsets(df: pd.DataFrame, p_values: List[float]) -> None:
 
             subsets[f"Subset {i}"] = subset_species
 
-        max_len = len(species_list)
-        for key in subsets:
-            subsets[key] += [None] * (max_len - len(subsets[key]))
-
-        output_df = pd.DataFrame(subsets)
+        output_df = pd.DataFrame({key: pd.Series(vals) for key, vals in subsets.items()})
         group_slug = str(group).strip().lower()
         output_file = f"{group_slug}_overlapping_subsets.csv"
         output_df.to_csv(output_file, index=False)
