@@ -461,32 +461,116 @@ def convert_nexus_to_newick(nexus_file: str, t: int) -> List[str]:
 
     return selected_newick_trees
 
-
-def validate_existing_nexus_dir(input_dir: str, expected_nexus_files: int = 10) -> None:
+def prepare_nexus_inputs(input_dir: str, expected_nexus_files: int = 10) -> List[str]:
     if not os.path.isdir(input_dir):
         raise FileNotFoundError(f"Nexus directory not found: {input_dir}")
 
-    nexus_files = [f for f in os.listdir(input_dir) if f.lower().endswith(".nex")]
-    nexus_files.sort()
+    direct_nex = sorted(
+        f for f in os.listdir(input_dir)
+        if f.lower().endswith(".nex") and os.path.isfile(os.path.join(input_dir, f))
+    )
+    zip_files = sorted(
+        f for f in os.listdir(input_dir)
+        if f.lower().endswith(".zip") and os.path.isfile(os.path.join(input_dir, f))
+    )
 
-    if len(nexus_files) != expected_nexus_files:
+    # Important:
+    # - If we already have exactly the expected number of .nex files, use them and ignore zips.
+    #   This preserves compatibility with the automated path, which leaves both .zip and .nex files.
+    # - Otherwise allow a mixed folder only if direct_nex + zip_files == expected_nexus_files.
+    if len(direct_nex) == expected_nexus_files:
+        nexus_files = [os.path.join(input_dir, f) for f in direct_nex]
+        print(f"Using {len(nexus_files)} existing .nex files from {input_dir}")
+        if zip_files:
+            print(f"Ignoring {len(zip_files)} .zip file(s) because enough .nex files already exist.")
+        return nexus_files
+
+    if len(direct_nex) > expected_nexus_files:
         raise ValueError(
-            f"Expected exactly {expected_nexus_files} .nex files in {input_dir}, "
-            f"but found {len(nexus_files)}."
+            f"Expected exactly {expected_nexus_files} Nexus inputs, "
+            f"but found {len(direct_nex)} .nex files in {input_dir}."
         )
 
-    print(f"Validated existing Nexus directory: {input_dir}")
-    print(f"Found {len(nexus_files)} Nexus files.")
+    if len(direct_nex) + len(zip_files) != expected_nexus_files:
+        raise ValueError(
+            f"Expected exactly {expected_nexus_files} Nexus inputs in {input_dir}, "
+            f"but found {len(direct_nex)} .nex file(s) and {len(zip_files)} .zip file(s)."
+        )
+
+    prepared_dir = os.path.join(input_dir, "_prepared_nexus")
+    clean_folder(prepared_dir)
+
+    prepared_nexus_files: List[str] = []
+    used_stems = set()
+
+    def unique_stem(base_stem: str) -> str:
+        stem = base_stem
+        counter = 2
+        while stem in used_stems:
+            stem = f"{base_stem}_{counter}"
+            counter += 1
+        used_stems.add(stem)
+        return stem
+
+    # Copy direct .nex files into the prepared folder
+    for filename in direct_nex:
+        src = os.path.join(input_dir, filename)
+        stem = unique_stem(os.path.splitext(filename)[0])
+        dst = os.path.join(prepared_dir, f"{stem}.nex")
+        shutil.copy2(src, dst)
+        prepared_nexus_files.append(dst)
+
+    # Extract one .nex per zip archive and rename from the outer zip stem
+    for zip_name in zip_files:
+        zip_path = os.path.join(input_dir, zip_name)
+        zip_stem = unique_stem(os.path.splitext(zip_name)[0])
+
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            inner_nex = [
+                name for name in zf.namelist()
+                if not name.endswith("/") and name.lower().endswith(".nex")
+            ]
+            inner_yaml = [
+                name for name in zf.namelist()
+                if not name.endswith("/") and (name.lower().endswith(".yaml") or name.lower().endswith(".yml"))
+            ]
+
+            if len(inner_nex) != 1:
+                raise ValueError(
+                    f"{zip_name}: expected exactly 1 .nex file inside the archive, "
+                    f"found {len(inner_nex)}."
+                )
+
+            nex_dst = os.path.join(prepared_dir, f"{zip_stem}.nex")
+            with zf.open(inner_nex[0]) as src_f, open(nex_dst, "wb") as dst_f:
+                shutil.copyfileobj(src_f, dst_f)
+            prepared_nexus_files.append(nex_dst)
+
+            # Optional: also save config yaml for traceability
+            if len(inner_yaml) == 1:
+                yaml_ext = os.path.splitext(inner_yaml[0])[1] or ".yaml"
+                yaml_dst = os.path.join(prepared_dir, f"{zip_stem}{yaml_ext}")
+                with zf.open(inner_yaml[0]) as src_f, open(yaml_dst, "wb") as dst_f:
+                    shutil.copyfileobj(src_f, dst_f)
+
+    prepared_nexus_files.sort()
+
+    if len(prepared_nexus_files) != expected_nexus_files:
+        raise ValueError(
+            f"Expected exactly {expected_nexus_files} prepared .nex files, "
+            f"but created {len(prepared_nexus_files)}."
+        )
+
+    print(f"Prepared {len(prepared_nexus_files)} Nexus file(s) from {input_dir}")
+    return prepared_nexus_files
 
 
-def process_nexus_files(input_dir: str, output_file: str, t: int) -> None:
+def process_nexus_files(nexus_files: List[str], output_file: str, t: int) -> None:
     all_selected_trees: List[str] = []
 
-    for filename in sorted(os.listdir(input_dir)):
-        if filename.endswith(".nex"):
-            nexus_file = os.path.join(input_dir, filename)
-            selected_trees = convert_nexus_to_newick(nexus_file, t)
-            all_selected_trees.extend(selected_trees)
+    for nexus_file in sorted(nexus_files):
+        selected_trees = convert_nexus_to_newick(nexus_file, t)
+        all_selected_trees.extend(selected_trees)
 
     with open(output_file, "w", encoding="utf-8") as out_file:
         for tree in all_selected_trees:
@@ -494,7 +578,6 @@ def process_nexus_files(input_dir: str, output_file: str, t: int) -> None:
                 out_file.write(tree + "\n")
 
     print(f"Saved {len(all_selected_trees)} Newick trees to {output_file}")
-
 
 # Main
 
@@ -572,13 +655,12 @@ def main() -> None:
 
     if args.use_existing_nexus:
         input_dir = args.use_existing_nexus
-        validate_existing_nexus_dir(input_dir, expected_nexus_files=10)
     else:
         automate_process(input_file, email)
         input_dir = default_nexus_dir
-        validate_existing_nexus_dir(input_dir, expected_nexus_files=10)
-
-    process_nexus_files(input_dir, output_file, t)
+    
+    nexus_files = prepare_nexus_inputs(input_dir, expected_nexus_files=10)
+    process_nexus_files(nexus_files, output_file, t)
 
     citations = {
         "amphibians": "Amphibians: Jetz, W., & Pyron, R. A. (2018). The interplay of past diversification and evolutionary isolation with present imperilment across the amphibian tree of life. Nature ecology & evolution, 2(5), 850-858.",
