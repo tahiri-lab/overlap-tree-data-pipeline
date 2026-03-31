@@ -621,10 +621,6 @@ Mode 1 requires `number_of_trees` to be divisible by 10 and to lie between 10 an
 
 Mode 1 expects this file in the current working directory.
 
-**Invalid Nexus folder in `--use_existing_nexus` mode**
-
-The supplied directory must exist and contain exactly 10 `.nex` files, one for each overlap subset.
-
 ### Mode 2
 
 **`ete3 is required`**
