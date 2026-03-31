@@ -221,7 +221,7 @@ python overlap_tree_pipeline.py service mammals 12 10 name@example.com \
 
 * `--use_existing_nexus DIR`
 
-  Skip VertLife submission and use an existing folder of downloaded Nexus files to finish the dataset
+  Skip VertLife submission and use an existing folder of downloaded VertLife results to finish the dataset. The directory may contain exactly 10 extracted `.nex` files, exactly 10 VertLife `.zip` downloads, or a mix of `.nex` and `.zip` inputs totaling 10 jobs.
 
 ### Constraints
 
@@ -241,7 +241,7 @@ Behavior by workflow:
 
 * In the **fully automated path**, all four outputs are produced.
 * In **`--prepare_only`** mode, only `selected_species.csv` and `<group>_overlapping_subsets.csv` are produced.
-* In **`--use_existing_nexus DIR`** mode, the Nexus directory must already exist and contain exactly 10 `.nex` files.
+* In **`--use_existing_nexus DIR`** mode, the supplied directory must already exist and must contain exactly 10 VertLife results, provided either as extracted `.nex` files, downloaded `.zip` archives, or a mix of the two.
 
 ### Manual fallback when VertLife is slow
 
@@ -266,15 +266,21 @@ This writes:
 
 Open `mammals_overlapping_subsets.csv`, submit each subset column through the VertLife website, and download the resulting Nexus files.
 
-Place the downloaded `.nex` files into a folder such as:
+Place the downloaded results into a folder such as:
 
 ```text
 mammals_nexus/
 ```
 
-The folder should contain exactly 10 Nexus files, one for each subset.
+The folder should represent exactly 10 subset jobs. It may contain:
 
-#### Step 3. Resume the pipeline locally from the downloaded Nexus files
+* 10 extracted `.nex` files, one for each subset
+* 10 downloaded VertLife `.zip` archives
+* or a mix of `.nex` and `.zip` files totaling 10 jobs
+
+If `.zip` archives are provided, the pipeline extracts the internal `.nex` file automatically. ZIP archives with repeated internal filenames such as `output.nex` are supported; extracted files are renamed from the outer ZIP filename to avoid collisions.
+
+#### Step 3. Resume the pipeline locally from the downloaded files
 
 ```bash
 python overlap_tree_pipeline.py service mammals 12 10 you@example.com \
@@ -284,7 +290,7 @@ python overlap_tree_pipeline.py service mammals 12 10 you@example.com \
   --use_existing_nexus mammals_nexus
 ```
 
-This final step converts the Nexus files to Newick, samples trees equally across the 10 subsets, and writes:
+This final step accepts either extracted Nexus files or raw VertLife ZIP downloads, converts the Nexus trees to Newick, samples trees equally across the 10 subsets, and writes:
 
 * `overlapping_dataset_mammals.txt`
 
@@ -601,8 +607,11 @@ Occasional retries during automated submission are expected. If automated reques
 
 1. run with `--prepare_only`
 2. submit the 10 subsets manually on VertLife
-3. place the downloaded `.nex` files into `<group>_nexus/`
+3. place the downloaded `.zip` or extracted `.nex` results into `<group>_nexus/`
 4. rerun with `--use_existing_nexus <group>_nexus`
+
+**Invalid Nexus folder in `--use_existing_nexus` mode**  
+The supplied directory must exist and must contain exactly 10 VertLife results, provided as extracted `.nex` files, downloaded `.zip` archives, or a mix of the two. If ZIP files are used, each archive must contain exactly one `.nex` file.
 
 **Errors with `number_of_trees`**
 
