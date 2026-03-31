@@ -1,0 +1,19 @@
+{
+  "n_trees": 10,
+  "sizes": {
+    "min": 10,
+    "max": 15
+  },
+  "overlap": {
+    "min": 0.35294117647058826,
+    "max": 0.6875
+  },
+  "intersection": {
+    "min": 6,
+    "max": 12
+  },
+  "out_of_range_pairs": 0,
+  "below_min_shared_pairs": 0,
+  "trees_with_all_anchors": 10,
+  "total_pairs": 45
+}

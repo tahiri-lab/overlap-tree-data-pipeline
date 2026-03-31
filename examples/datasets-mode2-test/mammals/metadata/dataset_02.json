@@ -1,0 +1,171 @@
+{
+  "group": "mammals",
+  "dataset_index": 2,
+  "bases_source": "generated",
+  "base_taxa_list_size": 25,
+  "base_taxa_list": [
+    "Xerospermophilus_perotensis",
+    "Elephantulus_myurus",
+    "Rattus_jobiensis",
+    "Ornithorhynchus_anatinus",
+    "Zaglossus_attenboroughi",
+    "Microperoryctes_aplini",
+    "Strigocuscus_pelengensis",
+    "Microgale_gracilis",
+    "Dasypus_hybridus",
+    "Calyptophractus_retusus",
+    "Aethomys_chrysophilus",
+    "Crocidura_whitakeri",
+    "Peromyscus_eva",
+    "Cryptotis_meridensis",
+    "Hydrodamalis_gigas",
+    "Acerodon_celebensis",
+    "Rhinolophus_ziama",
+    "Condylura_cristata",
+    "Eospalax_fontanierii",
+    "Sorex_arizonae",
+    "Microtus_ilaeus",
+    "Saguinus_geoffroyi",
+    "Ochotona_argentata",
+    "Platyrrhinus_chocoensis",
+    "Callicebus_personatus"
+  ],
+  "reference_tree_taxa_count": 25,
+  "n_input_trees": 10,
+  "subset_size_range": [
+    12,
+    18
+  ],
+  "pairwise_overlap_range": [
+    0.3,
+    0.7
+  ],
+  "min_shared_leaves_per_pair": 2,
+  "anchor_taxa_count": 5,
+  "anchors_explicit": [
+    "Crocidura_whitakeri",
+    "Dasypus_hybridus",
+    "Eospalax_fontanierii",
+    "Hydrodamalis_gigas",
+    "Strigocuscus_pelengensis"
+  ],
+  "prune_mode": "mixed",
+  "topology_noise": "nni",
+  "nni_moves": 1,
+  "length_scaling": "global_uniform",
+  "length_scale_range": [
+    1.003,
+    1.009
+  ],
+  "seed_base": 7,
+  "seed_dataset": 2007,
+  "notes": [
+    {
+      "tree_index": 0,
+      "target_size": 18,
+      "construction": "clade_union",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 1,
+      "target_size": 16,
+      "construction": "random_leaves",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 2,
+      "target_size": 17,
+      "construction": "clade_union",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 3,
+      "target_size": 14,
+      "construction": "random_leaves",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 4,
+      "target_size": 13,
+      "construction": "clade_union",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 5,
+      "target_size": 16,
+      "construction": "random_leaves",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 6,
+      "target_size": 17,
+      "construction": "clade_union",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 7,
+      "target_size": 13,
+      "construction": "clade_union",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 8,
+      "target_size": 18,
+      "construction": "random_leaves",
+      "relaxed_bounds": null
+    },
+    {
+      "tree_index": 9,
+      "target_size": 17,
+      "construction": "clade_union",
+      "relaxed_bounds": null
+    }
+  ],
+  "input_trees": [
+    {
+      "tree_index": 1,
+      "n_taxa": 18
+    },
+    {
+      "tree_index": 2,
+      "n_taxa": 16
+    },
+    {
+      "tree_index": 3,
+      "n_taxa": 17
+    },
+    {
+      "tree_index": 4,
+      "n_taxa": 14
+    },
+    {
+      "tree_index": 5,
+      "n_taxa": 13
+    },
+    {
+      "tree_index": 6,
+      "n_taxa": 16
+    },
+    {
+      "tree_index": 7,
+      "n_taxa": 17
+    },
+    {
+      "tree_index": 8,
+      "n_taxa": 13
+    },
+    {
+      "tree_index": 9,
+      "n_taxa": 18
+    },
+    {
+      "tree_index": 10,
+      "n_taxa": 17
+    }
+  ],
+  "paths": {
+    "reference_tree": "/content/overlap-tree-data-pipeline/datasets-mode2-test/mammals/reference_trees/reference_02.nwk",
+    "multiset_file": "/content/overlap-tree-data-pipeline/datasets-mode2-test/mammals/input_multisets/multiset_2.txt",
+    "base_taxa_lists_csv": "/content/overlap-tree-data-pipeline/datasets-mode2-test/mammals/base_taxa_lists/mammals_base_taxa_lists.csv"
+  }
+}
