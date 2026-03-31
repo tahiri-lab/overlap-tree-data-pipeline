@@ -165,7 +165,7 @@ python overlap_tree_pipeline.py service mammals 12 10 name@example.com \
   --prepare_only
 ```
 
-### Resume-from-existing-Nexus example
+### Resume from existing results example
 
 ```bash
 python overlap_tree_pipeline.py service mammals 12 10 name@example.com \
@@ -264,7 +264,7 @@ This writes:
 
 #### Step 2. Submit each subset manually on the VertLife PhyloSubsets website
 
-Open `mammals_overlapping_subsets.csv`, submit each subset column through the VertLife website, and download the resulting Nexus files.
+Open `mammals_overlapping_subsets.csv`, submit each subset column through the VertLife website, and download the resulting files.
 
 Place the downloaded results into a folder such as:
 
