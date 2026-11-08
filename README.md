@@ -641,6 +641,14 @@ If the overlap between a base taxa list and the full tree is too small, the corr
 
 ---
 
+### Algorithmic description
+
+A  description of the dataset construction procedures, including high-level pseudocode for both modes, is available in [pseudocodes.md](pseudocodes.md).
+
+The pseudocode reflects the implemented behavior and documents the limitations of the current constraint-handling procedure.
+
+---
+
 ## Citation
 
 If VertLife data are used, cite the relevant [VertLife paper(s)](https://vertlife.org/data/) and the corresponding group-level phylogeny sources.
