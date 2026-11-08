@@ -1,4 +1,4 @@
-# Pipeline algorithm pseudocodes: construction of phylogenetic tree datasets with partial taxon overlap
+# Pipeline algorithm pseudocodes
 
 This document provides high-level pseudocodes of the implemented pipeline, organized by construction mode and processing stage. It complements the runnable code, and it is not an alternative implementation or a specification of behavior that the code does not enforce.
 
@@ -13,13 +13,7 @@ All input trees are assumed to be available as Newick or Nexus data, as appropri
 
 ## Common definitions
 
-For two taxon sets `A` and `B`, the **Jaccard similarity** is
-
-\[
-J(A,B)=\frac{|A\cap B|}{|A\cup B|}.
-\]
-
-Mode 1 specifies *target* Jaccard values between each generated taxon subset and one base subset. Mode 2 tests *interval constraints* for each new subset against all previously accepted subsets. Neither mode is described here as achieving exact targets unconditionally: Mode 1 has rounding/wrapping effects, and Mode 2 may relax or bypass candidate constraints and subsequently repair coverage.
+For two taxon sets, the Jaccard similarity is used. Mode 1 specifies target Jaccard values between each generated taxon subset and one base subset. Mode 2 tests interval constraints for each new subset against all previously accepted subsets. Neither mode is described here as achieving exact targets unconditionally: Mode 1 has rounding/wrapping effects, and Mode 2 may relax or bypass candidate constraints and subsequently repair coverage.
 
 ---
 
